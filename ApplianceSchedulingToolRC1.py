@@ -23,7 +23,6 @@ folder_path = "household data" #Define the folder and file names
 file_name = "dataframe.csv" #Define the folder and file names
 full_path = os.path.join(folder_path, file_name) #Combine them into a full file path
 df = pd.read_csv(full_path) #Read the CSV file
-data_frame = df ##all instances of data_frame needs to be rewritten at some point to df! OR replace df with dataframe...keeping for compatability for now
 df_time = df["Time Start"]  #used for plotting and for optimisation....
 df_generation = df["Generation"] #generation data
 df_demand = df["Demand"] #demand data
@@ -39,8 +38,6 @@ for file in folder_path.glob("*.csv"):
     appliance_data_wh = appliance_data["Wh"]
     appliance_data_kwh = appliance_data_wh / kwhr
     appliance_data_time = appliance_data["Time Start"]
-    appliance_data_starttime = appliance_data["Earliest Start"]
-    appliance_data_finishtime = appliance_data["Latest Finish"]
     df_demandapp = df_demandapp + appliance_data_kwh #Pass schedule to demand-appliance-profile
 print(".........................................................................................")
 df_demandapp = df_demandapp + df_demand #update df_demandapp to include appliance demand data and household demand
@@ -59,18 +56,15 @@ demandsum = df_demand.sum()
 print("Total Base Demand = {:.2f}kWh".format(demandsum))
 demandappsum = df_demandapp.sum()
 print("Total Base Demand and Appliance Power Budget = {:.2f}kWh".format(demandappsum))
-data_frame_energyusage = df_demandapp - df_generation
-data_frame_energyusage[data_frame_energyusage<0] = 0
-data_frame['energy_usage'] = data_frame_energyusage
-energyusage_total = data_frame['energy_usage'].sum()
-energyusage_total_permonth = energyusage_total * 30.42 #this is average number of days in a month for a non-leap year
+energyusage = df_demandapp - df_generation
+energyusage[energyusage<0] = 0
+energyusage_total = energyusage.sum()
 print("Energy imported from the grid per day = {:.2f}kWh".format(energyusage_total))
-#print("This equates to approximately {:.2f}kW per month.".format(energyusage_total_permonth)) #need to check this, it looks wonky, convert to kWHr
 '''############################################################################################################## Cost Calculator'''
 #Find Cost
 def calculate_cost(df_demandapp, rates):
-    data_frame['Total'] = df_demandapp * rates
-    grand_total = data_frame['Total'].sum()
+    grand_total = df_demandapp * rates
+    grand_total = grand_total.sum()
     grand_total_permonth = grand_total * 30.42 #this is average number of days in a month for a non-leap year
     return grand_total, grand_total_permonth
 #grand_total, grand_total_permonth = calculate_cost(df_demand, rates) # Find original cost: This is cost of base demand only
@@ -81,21 +75,6 @@ print("The starting cost for base demand and appliances after generation to be s
 print("This equates to approximately ${:.2f} per month.".format(grand_total_permonth))
 pre_opt_gt = grand_total
 pre_opt_gtm = grand_total_permonth
-'''############################################################################################################## Total Demand Calculator -- for solar, removed for preso'''
-#Find Total Demand for a day
-#df_resulting_demand = data_frame['resulting']
-def calculate_demand(df_resulting_demand):
-    data_frame['Total'] = df_resulting_demand
-    demand_grand_total = data_frame['Total'].sum()
-    demand_grand_total_permonth = demand_grand_total * 30.42 #this is average number of days in a month for a non-leap year
-    print("The total demand per day is {:.2f}kWHrs".format(demand_grand_total))
-    print("This equates to approximately {:.2f}kWHrs per month.".format(demand_grand_total_permonth))
-    return demand_grand_total, demand_grand_total_permonth
-#Use: demand_grand_total, demand_grand_total_permonth = calculate_demand(df_resulting_demand)
-
-####initial call of this function (no appliances and then with appliances): ---this is deprecated/doubled up Check KK
-#demand_grand_total, demand_grand_total_permonth = calculate_demand(df_demand)
-#demand_grand_total, demand_grand_total_permonth = calculate_demand(df_demandapp)
 '''############################################################################################################## Graphing -- '''
 #########################This is working plot with time slots on x axis
 fig, ax = plt.subplots(figsize=(50, 15)) #50 is width, 15 is height of graph
@@ -117,20 +96,6 @@ plt.setp(sec.get_xticklabels()[1::2], visible=False) # Set visibility of every 2
 plt.legend(['Generation','Demand', 'Demand w/Appliances']) #show the legend
 plt.grid(True)
 plt.show()
-####################################################################################################### move from bottom, work in progress Start
-'''THIS IS FOR GRAPHING & CALCS''' '''SOLAR ONLY'''
-######################## This is actually giving us the resultant demand profile after generation!!!!!!!
-#This needs to move to the top of the script!
-data_frame['resulting'] = np.where(data_frame['Demand'] - data_frame['Generation'] > 0, data_frame['Demand'] - data_frame['Generation'], 0) 
-df_resulting_demand = data_frame['resulting']
-######################## resultant demand profile above!
-
-######################## This is actually giving us the resultant left over generation from initial demand minus initial generation!!!!!!!
-##THis needs to move up to top of script!!
-data_frame['result'] = np.where(data_frame['Generation'] > 0, np.where(data_frame['Generation'] - data_frame['Demand'] > 0, data_frame['Generation'] - data_frame['Demand'], 0), 0)
-df_resulting = data_frame['result']
-######################## leftover generation above!
-###################################################################################################### move from bottom, work in progress Finish
 '''############################################################################################################## Cost Structure Graph:'''
 '''This works but only need to enable for user to check if the cost structure is correct (say if we manually input cost structure)'''  
 ##This is using values in .csv files and graphing them,  THIS IS FOR GRAPHING Tariff Structure
@@ -157,6 +122,7 @@ plt.setp(plt.gca().get_xticklabels()[1::2], visible=False) # Set visibility of e
 plt.setp(sec.get_xticklabels()[1::2], visible=False) # Set visibility of every 2nd label of the secondary x axis to false
 plt.show()
 '''##############################################################################################################  Simple linear Solver Start:'''
+df_resulting = np.where(df_generation > 0, np.where(df_generation - df_demand > 0, df_generation - df_demand, 0), 0) #calculates leftover generation
 generation = df_resulting #'''THIS WORKS use this''' #this is for simple linear solver, with SOLAR
 '''############################################################################################################## Optimise for cost if no local generation:'''
 '''DEMAND & GENERATION ARE ROLLING VALUES AND NEED TO BE UPDATED -- CHECK KK'''
@@ -217,14 +183,6 @@ def excluded_tslots(appliance_profile, start_tslot, excludedts):
     return excludedts
 ###########################How to use:
     #excludedts = excluded_tslots(appliance_profile, start_tslot, excludedts)
-'''############################################################################################################## Delete below, for reference/check - deprecated'''
-#df_resulting_demand: this was demand - generation
-#DemMinGenAppPre: this was demand-generation+apps
-#DemMinGenAppPost: this was demand-generation+apps
-#df_rolling_demand: this was demand - generation
-# KK
-#print(f"df_resulting_demand: {df_resulting_demand}, df_rolling_demand: {df_rolling_demand}") #for debugging purposes only - see what it's calculating
-#print(f"DemMinGenAppPre: {DemMinGenAppPre}, DemMinGenAppPost: {DemMinGenAppPost}") #for debugging purposes only - see what it's calculating
 '''############################################################################################################## Appliance Schedule Graph Start Pre Optimisation'''
 ##This is using values in .csv files and graphing them. Define the directory and look for all CSV files:
 folder_path = Path("appliance data") #set the path to the appliance data
@@ -272,8 +230,8 @@ for file in folder_path.glob("*.csv"): #iterate through all appliance data .csv 
     appliance_pu = np.array([appliance_data_kwh])#pu = power usage in kWh
     if generation_available == 1:#check if local generation.
         # Calculate Cost of running appliance pre-optimisation (appliance profile - generation)
-        appprof_gen = appliance_data_kwh - df_resulting #Only consider the energy that needs to be imported from the grid
-        appprof_gen.loc[appprof_gen < 0] = 0 #All negative values become 0 (if in a timeslot, generation is greater than appliance demand)
+        appprof_gen = appliance_data_kwh - generation #Only consider the energy that needs to be imported from the grid
+        appprof_gen[appprof_gen < 0] = 0 #All negative values become 0 (if in a timeslot, generation is greater than appliance demand)
         grand_total, grand_total_permonth = calculate_cost(appprof_gen, rates)
         print("The starting cost per day is ${:.2f} prior to any scheduling optimisations.".format(grand_total))
         print("This equates to approximately ${:.2f} per month.".format(grand_total_permonth)) 
@@ -287,8 +245,8 @@ for file in folder_path.glob("*.csv"): #iterate through all appliance data .csv 
         # Add start_tslot leading zeros (space 0 needs to be padded with a 0), & add 48 (total tslots) - (start_tslot+length of appliance runtime) lagging zeros:
         appliance_profile = np.pad(appliance_profile, (start_tslot, 48 - (start_tslot + len(appliance_profile))), mode='constant')
         # Calculate Cost of running appliance post-optimisation
-        appprof_gen = appliance_profile - df_resulting #Only consider the energy tha tneeds to be impored from the grid
-        appprof_gen.loc[appprof_gen < 0] = 0 #All negative values become 0 (if in a timeslot, generation is greater than appliance demand)
+        appprof_gen = appliance_profile - generation #Only consider the energy that needs to be imported from the grid
+        appprof_gen[appprof_gen < 0] = 0 #All negative values become 0 (if in a timeslot, generation is greater than appliance demand)
         grand_total, grand_total_permonth = calculate_cost(appprof_gen, rates)
         print("The starting cost per day is ${:.2f} post scheduling optimisation.".format(grand_total))
         print("This equates to approximately ${:.2f} per month.".format(grand_total_permonth))
