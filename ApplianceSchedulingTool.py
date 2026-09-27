@@ -190,11 +190,11 @@ for file_path in sorted(folder_path.glob("*.csv")):
     file_name = os.path.basename(file_path) # Extract only the file name to use as a clean legend label
     df = pd.read_csv(file_path) # Read the data file
     # Plot the data line or step:
-    ax.step(df.iloc[:, 1], df.iloc[:, 3], label=file_name) # -- Step Plot, iloc[:, 1] targets column 2
+    ax.step(df.iloc[:, 1], df.iloc[:, 3] / kwhr, label=file_name) # -- Step Plot, iloc[:, 1] targets column 2
     #ax.plot(df.iloc[:, 1], df.iloc[:, 3], label=file_name) --Line plot
 #Finalise and display the graph after the for loop completes:
 ax.set_title("Appliance Schedule Pre Optimisation (from data files)")
-ax.set_ylabel("Watts") #might change this to kW later KK
+ax.set_ylabel("kW") #Label for y axis
 ax.step(appliance_data_time, blackzeroes, '-k', label=None) #this makes all 0 values appear black
 sec = ax.secondary_xaxis(location=-0.025)
 sec.set_xticks(df.iloc[:, 0])
