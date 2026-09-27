@@ -138,12 +138,11 @@ def calculate_best_start(rates, profile, excludedts, earliest_start, latest_fini
     print(f"Latest Starting Time Slot: {latest_start}")
     for tslot in range(earliest_start, latest_start + 1): #Test every possible start hour within constraints
         if tslot not in exclude:
-                if any(tslot <= x <= (tslot + len(profile)) for x in exclude): #Check if any of the tslots that are potentially to be scheduled are taken
-                    pass #empty if statement             
-                else:
-                    cost = np.sum(rates[tslot:tslot+len(profile)] * profile)
-#            print(f"Time Slot: {tslot}, Total Cost: {cost}") #for debugging purposes only - see what it's calculating
-#Check and save if best scheduling timeslot
+            if any(tslot <= x <= (tslot + len(profile)) for x in exclude): #Check if any of the tslots that are potentially to be scheduled are taken
+                pass #empty if statement             
+            else:
+                cost = np.sum(rates[tslot:tslot+len(profile)] * profile)
+                #Check and save if best scheduling timeslot:
                 if cost < best_cost:
                     best_cost = cost
                     best_tslot = tslot
