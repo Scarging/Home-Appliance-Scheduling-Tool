@@ -160,13 +160,12 @@ def calculate_bestgen_start(generation, profile, excludedts, earliest_start, lat
     latest_start = latest_finish - len(profile) - 1 #calculate latest starting timeslot
     print(f"Latest Starting Time Slot: {latest_start}")
     for tslot in range(earliest_start, latest_start + 1): #Test every possible start hour within constraints
-            if tslot not in exclude:
-                if any(tslot <= x <= (tslot + len(profile)) for x in exclude): #Check if any of the tslots that are potentially to be scheduled are taken
-                    pass #empty if statement             
-                else:
-                    gen = np.sum(generation[tslot:tslot+len(profile)] - profile)
-#                    print(f"Time Slot: {tslot}, Total Energy Used from the Grid: {gen}kW") #for debugging purposes only - see at which starting tslot the least amount of energy is used from the grid
-#Check and save if best scheduling timeslot
+        if tslot not in exclude:
+            if any(tslot <= x <= (tslot + len(profile)) for x in exclude): #Check if any of the tslots that are potentially to be scheduled are taken
+                pass #empty if statement             
+            else:
+                gen = np.sum(generation[tslot:tslot+len(profile)] - profile)
+                #Check and save if best scheduling timeslot:
                 if gen > best_gen:
                     best_gen = gen
                     best_tslot = tslot
