@@ -31,7 +31,7 @@ blackzeroes = np.zeros((48,)) #creating an array of correct shape, filled with 0
 df_demandapp = 0 #this is for creating initial graph and cost!!!
 #### Import Appliance Data:
 folder_path = Path("appliance data") #set the path to the appliance data
-for file in folder_path.glob("*.csv"):
+for file in sorted(folder_path.glob("*.csv")):
     appliance_data = pd.read_csv(file)
     appliance_name = file.stem
     print("Loading the {} schedule for optimisation...".format(appliance_name))
@@ -101,7 +101,7 @@ plt.show()
 ##This is using values in .csv files and graphing them,  THIS IS FOR GRAPHING Tariff Structure
 folder_path = Path("tariff data") #set the path to the tariff data
 fig, ax = plt.subplots(figsize=(50, 15)) #Setup the figure and axis before loading files, 50 is width, 15 is height of graph   
-for file_path in folder_path.glob("*.csv"): #Loop through every detected filename
+for file_path in sorted(folder_path.glob("*.csv")): #Loop through every detected filename
     file_name = os.path.basename(file_path) #Extract only the file name to use as a clean legend label
     df = pd.read_csv(file_path) #Read the data file
     ax.step(df.iloc[:, 1], df.iloc[:, 3], label="Tariff Data") #iloc[:, 1] targets column 2, and iloc[:, 3] targets column 4, --Step Plot
@@ -188,7 +188,7 @@ def excluded_tslots(appliance_profile, start_tslot, excludedts):
 folder_path = Path("appliance data") #set the path to the appliance data
 fig, ax = plt.subplots(figsize=(50, 15)) # Setup the figure and axis once before loading files: 50 is width, 15 is height of graph   
 # Loop through every detected filename:
-for file_path in folder_path.glob("*.csv"):
+for file_path in sorted(folder_path.glob("*.csv")):
     file_name = os.path.basename(file_path) # Extract only the file name to use as a clean legend label
     df = pd.read_csv(file_path) # Read the data file
     # Plot the data line or step:
@@ -217,7 +217,7 @@ start = time.perf_counter() # Benchmarking computation time: Start
 fig, ax = plt.subplots(figsize=(50, 15)) # Setup the figure and axis once before loading files, 50 is width, 15 is height of graph   
 df_demand_app = 0 #define this variable for use in for loop -- might change to empty value later
 folder_path = Path("appliance data") #set the path to the appliance data
-for file in folder_path.glob("*.csv"): #iterate through all appliance data .csv files in the appliance data folder
+for file in sorted(folder_path.glob("*.csv")): #iterate through all appliance data .csv files in the appliance data folder
     appliance_data = pd.read_csv(file) #read .csv file, create dataframe
     appliance_name = file.stem #read appliance name from filename
     print(".........................................................................................")
