@@ -10,6 +10,8 @@ from pathlib import Path #this is needed for reading files project folder struct
 #import glob #not needed in Spyder IDE
 import os
 import math #for always rounding up to whole number
+import locale #apparently needed to ensure sorting is same for all systems
+locale.setlocale(locale.LC_ALL, 'C') #apparently needed to ensure sorting is same for all systems
 '''##############################################################################################################import csv files start
 This is reading tariff data, household demand data, household local generation data'''
 ##### Import Tariff Data:
