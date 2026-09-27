@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """Originally created in 2026 for Final Year Engineering Project @author: kkako"""
 print(".........................................................................................")
-print("Appliance Scheduler for Residential Demand Management"), print("Created by Karl Kakoschke, with commits from: N/A")
+print("Home Appliance Scheduling Tool (HAST) for Residential Demand Management"), print("Created by Karl Kakoschke, with commits from: N/A")
 import time #for performance benchmarking
 import pandas as pd #needed for csv import
 import matplotlib.pyplot as plt #matplotlib for graphs
